@@ -1,7 +1,7 @@
 let fs = require("fs");
 class ConfluenceStepOutputter {
   constructor(file, content) {
-    this.file = file + ".json";
+    this.file = file;
     this.content = content;
   }
 
@@ -29,18 +29,12 @@ class ConfluenceStepOutputter {
     this.content = jsonContent;
   }
 
-  makePageAndUpdate(file) {
-    let catalog;
-    if(file){
-      catalog = JSON.parse(fs.readFileSync(file));
-    }else{
-      this.makeFile();
-      catalog = this.content;
-    }
+  makePageAndUpdate(catalog=this.content) {
     let page =
       "<ac:macro ac:name=\"html\"><ac:plain-text-body><![CDATA[<script>\n$(document).ready(function(){\n    $('a.keyword-all').click(function(){\n        var keyword = $(this).html();\n        $('a.keyword-all').parent().parent().parent().hide();\n        $('a.keyword-all').css('font-weight', 'normal');\n        $('a.keyword-'+keyword).parent().parent().parent().show();\n        $('a.keyword-'+keyword).css('font-weight', 'bold');\n     });\n});\n</script>]]></ac:plain-text-body></ac:macro>";
     let keywords_list = [];
     catalog.forEach(step => {
+      console.log("----------Generating Steps---------------");
       page += `<ac:macro ac:name="expand"><ac:parameter ac:name="title"> ${
         step["type"]
       } - ${step["name"]}`;
@@ -67,10 +61,14 @@ class ConfluenceStepOutputter {
     console.log("page is generated");
     this.updateConfluencePage(page);
   }
-
   updateConfluencePage(content){
-    //makePageAndUpdate
+    //code for confluence
     console.log("confluence is updated");
+  }
+  openFile(file){
+    let jsonContent = fs.readFileSync(file,"utf8");
+    jsonContent = JSON.parse(jsonContent);
+    this.makePageAndUpdate(jsonContent);
   }
 }
 

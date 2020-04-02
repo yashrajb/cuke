@@ -15,7 +15,7 @@ if(argv.o && argv.d){
 }else if(argv.o){
  openFile(argv.o)
 }else if(argv.d){
-  makeFile();
+  makeFile(argv.d);
 }
 
 
@@ -38,13 +38,16 @@ dirs.forEach((dir) => {
     all_steps.push(...step_parser.steps);    ;
 });
 output.sorter();
+output.makeFile();
 output.makePageAndUpdate();
 }
 
 function openFile(file){
   let outputFile = path.resolve(...file.split("/"));
+  console.log(outputFile);
   let output = new ConfluenceStepOutputter();
-  output.makePageAndUpdate(outputFile);
+
+  output.openFile(outputFile);
 }
 
 

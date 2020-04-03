@@ -27,12 +27,13 @@ class StepParser {
     let obj = {};
     while (i < this.lines.length) {
       let line = this.lines[i].trim();
-      if (obj.description) {
-        obj = {};
-      }
       if (
         /^(Given|When|Then|Before|After|AfterStep|Transform)[ (]/.test(line)
       ) {
+        if(obj.type && obj.name){
+          this.parse_step(obj);
+          obj = {};
+        }
         obj.type = this.parse_step_type(line);
         obj.name = this.parse_step_name(line);
       }
@@ -44,15 +45,25 @@ class StepParser {
         obj.description = descriptionAndKeywords.description;
         obj.keywords = descriptionAndKeywords.keywords;
       }
-      if (Object.entries(obj).length === 4) {
-        this.parse_step(obj);
+      if(i === this.steps.length-1){
+        if(Object.entries(obj)===4){
+          this.parse_step(obj);
+        }
       }
+     if(i === this.lines.length-1){
+       console.log("hello world");
+       console.log(obj);
+       if(Object.entries(obj).length > 0){
+         this.parse_step(obj);
+       }
+     }
       i++;
     }
   }
 
   parse_step(obj) {
-    this.steps.push({ ...obj, filename: this.current_file });
+    
+      this.steps.push({ ...obj, filename: this.current_file });
   }
 
   parse_step_type(line) {
@@ -67,15 +78,25 @@ class StepParser {
   parse_step_comment_and_keywords(line, index) {
     let i = index;
     let l = line;
+    let description = null,
+      keywords = null;
     while (!/^\*\//gim.test(this.lines[i].trim())) {
       i++;
       l = l + this.lines[i];
     }
-    i = l.search(/keywords|keyword/gim);
-    let keywords = this.parse_step_keyword(l);
-    let description = l.slice(0, i);
-    description = description.replace("/*", "").replace("---", "");
-    description = description.trim();
+    i = l.search(/\-{1,}/gim);
+    if (i !== -1) {
+      i = l.search(/keywords:|keyword:/gim);
+      keywords = this.parse_step_keyword(l);
+      description = l;
+      if (i !== -1) {
+        description = l.slice(0, i);
+      }
+      description = description
+        .replace(/\/\*|\*\//gim, "")
+        .replace(/\-{1,}/gim, "");
+      description = description.trim();
+    }
     return {
       description,
       keywords
@@ -83,18 +104,26 @@ class StepParser {
   }
 
   parse_step_keyword(line) {
-    let index = line.search(/(keywords|keyword)/gim);
-    if (index) {
-      let colonIndex = line.search(":");
-      line = line.slice(colonIndex);
-      line = line
-        .replace(":", "")
-        .replace("---", "")
-        .replace("*/", "");
-      line = line.trim();
-      return line.split(",");
+    var index;
+    var key;
+    if (line.includes("keywords:")) {
+      index = line.indexOf("keywords:");
+      key = "keywords:";
     }
 
+    if (line.includes("keyword:")) {
+      index = line.indexOf("keyword:");
+      key = "keyword:";
+    }
+    if (index && key) {
+      return (line = line
+        .substring(index)
+        .replace(key, "")
+        .replace(/\-{1,}/, "")
+        .replace("*/", "")
+        .trim()
+        .split(","));
+    }
     return null;
   }
 }

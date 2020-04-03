@@ -40,13 +40,14 @@ class ConfluenceStepOutputter {
       } - ${step["name"]}`;
       page += "</ac:parameter><ac:rich-text-body><b>Keywords: ";
       page += '<a class="keyword-all">all</a>';
-      step["keywords"].forEach(keyword => {
-        page += `,<a class="keyword-all keyword-${keyword}">${keyword}</a>`;
-        //console.log();
-        if (!keywords_list.find(el => el === keyword)) {
-          keywords_list.push(keyword);
-        }
-      });
+      if(step["keywords"] && step["keywords"].length){
+        step["keywords"].forEach(keyword => {
+          page += `,<a class="keyword-all keyword-${keyword}">${keyword}</a>`;
+          if (!keywords_list.find(el => el === keyword)) {
+            keywords_list.push(keyword);
+          }
+        });
+      }
       page += "</b><pre>";
       page += step["description"];
       page += "</pre></ac:rich-text-body></ac:macro>";

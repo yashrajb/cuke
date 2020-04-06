@@ -1,4 +1,5 @@
 let fs = require("fs");
+let path = require("path");
 class ConfluenceStepOutputter {
   constructor(file, content) {
     this.file = file;
@@ -49,7 +50,7 @@ class ConfluenceStepOutputter {
         });
       }
       page += "</b><pre>";
-      page += step["description"];
+      page += step["description"] || "";
       page += "</pre></ac:rich-text-body></ac:macro>";
     });
 
@@ -59,7 +60,6 @@ class ConfluenceStepOutputter {
     });
     keyword_header += "</b></p><h2>Steps:</h2>";
     page = keyword_header + page;
-    console.log("page is generated");
     this.updateConfluencePage(page);
   }
   updateConfluencePage(content){
